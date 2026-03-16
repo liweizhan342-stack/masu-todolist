@@ -14,6 +14,9 @@
       --accent-2: #3b82f6;
       --danger: #ef4444;
       --border: #1f2937;
+      --low: #64748b;
+      --medium: #f59e0b;
+      --high: #ef4444;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,7 +27,7 @@
       min-height: 100vh;
       padding: 24px;
     }
-    .wrap { max-width: 760px; margin: 0 auto; }
+    .wrap { max-width: 880px; margin: 0 auto; }
     .card {
       background: rgba(17,24,39,.92);
       border: 1px solid var(--border);
@@ -35,9 +38,7 @@
     h1 { margin: 0 0 8px; font-size: 30px; }
     .sub { color: var(--muted); margin-bottom: 18px; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    input[type="text"] {
-      flex: 1;
-      min-width: 220px;
+    input[type="text"], input[type="date"], select {
       padding: 14px;
       border-radius: 12px;
       border: 1px solid var(--border);
@@ -45,6 +46,7 @@
       color: var(--text);
       font-size: 16px;
     }
+    input[type="text"] { flex: 1; min-width: 220px; }
     button {
       border: 0;
       border-radius: 12px;
@@ -57,11 +59,15 @@
     .filter { background: #1e293b; }
     .filter.active { background: var(--accent-2); }
     .clear { background: var(--danger); }
+    .ghost { background: #334155; }
     .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0; color: var(--muted); font-size: 14px; }
+    .tiny { color: var(--muted); font-size: 12px; }
+    .empty { text-align: center; color: var(--muted); padding: 20px 0 6px; }
+    .actions { margin-top: 12px; }
     ul { list-style: none; padding: 0; margin: 18px 0 0; }
     li {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       padding: 14px;
       border: 1px solid var(--border);
@@ -70,20 +76,43 @@
       background: #0b1220;
     }
     li.done .text { text-decoration: line-through; color: #64748b; }
-    .text { flex: 1; word-break: break-word; }
-    .tiny { color: var(--muted); font-size: 12px; }
-    .ghost { background: #334155; }
-    .empty { text-align: center; color: var(--muted); padding: 20px 0 6px; }
+    .task-main { flex: 1; }
+    .text { font-size: 16px; margin-bottom: 6px; word-break: break-word; }
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid #334155;
+      background: #111827;
+    }
+    .priority-low { color: #cbd5e1; border-color: var(--low); }
+    .priority-medium { color: #fde68a; border-color: var(--medium); }
+    .priority-high { color: #fecaca; border-color: var(--high); }
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .row > * { width: 100%; }
+      button { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>🦞 Masu TodoList</h1>
-      <div class="sub">最小可用版：新增、完成、刪除、篩選、localStorage。</div>
+      <div class="sub">低維護版：新增、完成、刪除、篩選、優先級、截止日、JSON 匯出匯入。</div>
 
       <div class="row">
         <input id="todoInput" type="text" placeholder="輸入今天要完成的事..." />
+        <select id="priorityInput" aria-label="優先級">
+          <option value="low">低優先</option>
+          <option value="medium" selected>中優先</option>
+          <option value="high">高優先</option>
+        </select>
+        <input id="dueDateInput" type="date" aria-label="截止日期" />
         <button class="add" id="addBtn">新增</button>
       </div>
 
@@ -100,17 +129,25 @@
         <button class="clear" id="clearDoneBtn">清除已完成</button>
       </div>
 
+      <div class="row actions">
+        <button class="ghost" id="exportBtn">匯出 JSON</button>
+        <button class="ghost" id="importBtn">匯入 JSON</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none;" />
+      </div>
+
       <ul id="todoList"></ul>
       <div class="empty" id="emptyState">目前沒有任務，新增一個吧。</div>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'masu-todolist-v1';
+    const STORAGE_KEY = 'masu-todolist-v2';
     let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let currentFilter = 'all';
 
     const todoInput = document.getElementById('todoInput');
+    const priorityInput = document.getElementById('priorityInput');
+    const dueDateInput = document.getElementById('dueDateInput');
     const addBtn = document.getElementById('addBtn');
     const todoList = document.getElementById('todoList');
     const emptyState = document.getElementById('emptyState');
@@ -122,16 +159,24 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     }
 
+    function priorityLabel(priority) {
+      return { low: '低優先', medium: '中優先', high: '高優先' }[priority] || '中優先';
+    }
+
     function addTodo() {
       const text = todoInput.value.trim();
       if (!text) return;
       todos.unshift({
         id: crypto.randomUUID(),
         text,
+        priority: priorityInput.value,
+        dueDate: dueDateInput.value || '',
         done: false,
         createdAt: new Date().toLocaleString('zh-TW')
       });
       todoInput.value = '';
+      dueDateInput.value = '';
+      priorityInput.value = 'medium';
       save();
       render();
     }
@@ -160,6 +205,33 @@
       return todos;
     }
 
+    function exportJson() {
+      const blob = new Blob([JSON.stringify(todos, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'masu-todolist-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJson(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!Array.isArray(data)) throw new Error('JSON 格式錯誤');
+          todos = data;
+          save();
+          render();
+          alert('匯入成功');
+        } catch (error) {
+          alert('匯入失敗：請確認 JSON 格式正確');
+        }
+      };
+      reader.readAsText(file);
+    }
+
     function render() {
       const list = filteredTodos();
       todoList.innerHTML = '';
@@ -167,7 +239,6 @@
       totalCount.textContent = todos.length;
       activeCount.textContent = todos.filter(t => !t.done).length;
       doneCount.textContent = todos.filter(t => t.done).length;
-
       emptyState.style.display = list.length ? 'none' : 'block';
 
       list.forEach(todo => {
@@ -175,9 +246,13 @@
         li.className = todo.done ? 'done' : '';
         li.innerHTML = `
           <input type="checkbox" ${todo.done ? 'checked' : ''} />
-          <div class="text-wrap" style="flex:1;">
+          <div class="task-main">
             <div class="text">${escapeHtml(todo.text)}</div>
-            <div class="tiny">建立時間：${escapeHtml(todo.createdAt)}</div>
+            <div class="meta">
+              <span class="badge priority-${escapeHtml(todo.priority)}">${escapeHtml(priorityLabel(todo.priority))}</span>
+              ${todo.dueDate ? `<span class="badge">截止：${escapeHtml(todo.dueDate)}</span>` : ''}
+              <span class="badge">建立：${escapeHtml(todo.createdAt)}</span>
+            </div>
           </div>
           <button class="ghost">刪除</button>
         `;
@@ -193,7 +268,7 @@
 
     function escapeHtml(text) {
       const div = document.createElement('div');
-      div.textContent = text;
+      div.textContent = text ?? '';
       return div.innerHTML;
     }
 
@@ -208,6 +283,13 @@
       });
     });
     document.getElementById('clearDoneBtn').addEventListener('click', clearDone);
+    document.getElementById('exportBtn').addEventListener('click', exportJson);
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) importJson(file);
+      e.target.value = '';
+    });
 
     render();
   </script>
