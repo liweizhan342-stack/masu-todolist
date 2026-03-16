@@ -89,6 +89,20 @@
       border: 1px solid #334155;
       background: #111827;
     }
+    .drag-handle {
+      color: var(--muted);
+      cursor: grab;
+      user-select: none;
+      font-size: 20px;
+      line-height: 1;
+      padding-top: 4px;
+    }
+    .sortable-ghost {
+      opacity: .35;
+    }
+    .sortable-chosen {
+      border-color: var(--accent-2);
+    }
     .priority-low { color: #cbd5e1; border-color: var(--low); }
     .priority-medium { color: #fde68a; border-color: var(--medium); }
     .priority-high { color: #fecaca; border-color: var(--high); }
@@ -149,6 +163,7 @@
     let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let currentFilter = 'all';
     let filterText = '';
+    let sortableInstance = null;
 
     const todoInput = document.getElementById('todoInput');
     const searchInput = document.getElementById('searchInput');
@@ -255,7 +270,9 @@
       list.forEach(todo => {
         const li = document.createElement('li');
         li.className = todo.done ? 'done' : '';
+        li.dataset.id = todo.id;
         li.innerHTML = `
+          <div class="drag-handle" title="拖曳排序">⋮⋮</div>
           <input type="checkbox" ${todo.done ? 'checked' : ''} />
           <div class="task-main">
             <div class="text">${escapeHtml(todo.text)}</div>
@@ -271,6 +288,32 @@
         li.querySelector('button').addEventListener('click', () => deleteTodo(todo.id));
         todoList.appendChild(li);
       });
+
+      if (sortableInstance) {
+        sortableInstance.destroy();
+        sortableInstance = null;
+      }
+
+      if (window.Sortable) {
+        sortableInstance = new Sortable(todoList, {
+          animation: 150,
+          handle: '.drag-handle',
+          ghostClass: 'sortable-ghost',
+          chosenClass: 'sortable-chosen',
+          onEnd: () => {
+            const orderedIds = [...todoList.querySelectorAll('li')].map(li => li.dataset.id);
+            if (currentFilter === 'all' && !filterText.trim()) {
+              todos = orderedIds.map(id => todos.find(todo => todo.id === id)).filter(Boolean);
+            } else {
+              const orderedSubset = orderedIds.map(id => todos.find(todo => todo.id === id)).filter(Boolean);
+              const remaining = todos.filter(todo => !orderedIds.includes(todo.id));
+              todos = [...orderedSubset, ...remaining];
+            }
+            save();
+            render();
+          }
+        });
+      }
 
       document.querySelectorAll('[data-filter]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.filter === currentFilter);
@@ -308,5 +351,6 @@
 
     render();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 </body>
 </html>
