@@ -26,6 +26,7 @@
 - 截止日期
 - JSON 匯出 / 匯入
 - 拖拽排序（Drag & Drop Reorder）
+- PWA / 離線支援（manifest + service worker）
 - 使用 `localStorage` 儲存資料（重新整理後不消失）
 
 ---
@@ -59,6 +60,8 @@
 - `JavaScript`
 - `localStorage`
 - `SortableJS`（用於拖拽排序）
+- `Web Manifest`
+- `Service Worker`
 
 這樣做的理由：
 
@@ -170,14 +173,25 @@ todolist/
 
 ---
 
+## PWA / 離線支援
+
+本版本已加入基礎 PWA 能力：
+
+- `manifest.json`：定義應用名稱、顏色、啟動方式
+- `sw.js`：使用快取優先（Cache First）策略
+- 主頁面已註冊 Service Worker
+
+這代表專案在支援的瀏覽器中，可以更像一個可安裝的小 App，並在離線時保留基本載入能力。
+
 ## 後續升級路線
 
-目前已記錄的下一步候選方向：
+目前已完成：
 
-1. 拖拽排序（Drag & Drop Reorder）
-2. PWA / 離線支援（manifest + service worker）
+1. 搜尋過濾
+2. 拖拽排序（Drag & Drop Reorder）
+3. PWA / 離線支援（manifest + service worker）
 
-建議順序仍然是：
+建議後續仍維持原則：
 
 - 先做低風險、高可見價值的功能
 - 再做需要引入額外概念或外部庫的功能
