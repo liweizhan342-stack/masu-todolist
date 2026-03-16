@@ -103,7 +103,11 @@
   <div class="wrap">
     <div class="card">
       <h1>🦞 Masu TodoList</h1>
-      <div class="sub">低維護版：新增、完成、刪除、篩選、優先級、截止日、JSON 匯出匯入。</div>
+      <div class="sub">低維護版：新增、完成、刪除、篩選、搜尋、優先級、截止日、JSON 匯出匯入。</div>
+
+      <div class="row" style="margin-bottom:10px;">
+        <input id="searchInput" type="text" placeholder="🔍 搜尋任務關鍵字..." />
+      </div>
 
       <div class="row">
         <input id="todoInput" type="text" placeholder="輸入今天要完成的事..." />
@@ -144,8 +148,10 @@
     const STORAGE_KEY = 'masu-todolist-v2';
     let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let currentFilter = 'all';
+    let filterText = '';
 
     const todoInput = document.getElementById('todoInput');
+    const searchInput = document.getElementById('searchInput');
     const priorityInput = document.getElementById('priorityInput');
     const dueDateInput = document.getElementById('dueDateInput');
     const addBtn = document.getElementById('addBtn');
@@ -200,9 +206,14 @@
     }
 
     function filteredTodos() {
-      if (currentFilter === 'active') return todos.filter(t => !t.done);
-      if (currentFilter === 'done') return todos.filter(t => t.done);
-      return todos;
+      let list = todos;
+      if (currentFilter === 'active') list = list.filter(t => !t.done);
+      if (currentFilter === 'done') list = list.filter(t => t.done);
+      if (filterText.trim()) {
+        const keyword = filterText.trim().toLowerCase();
+        list = list.filter(t => (t.text || '').toLowerCase().includes(keyword));
+      }
+      return list;
     }
 
     function exportJson() {
@@ -281,6 +292,10 @@
         currentFilter = btn.dataset.filter;
         render();
       });
+    });
+    searchInput.addEventListener('input', (e) => {
+      filterText = e.target.value;
+      render();
     });
     document.getElementById('clearDoneBtn').addEventListener('click', clearDone);
     document.getElementById('exportBtn').addEventListener('click', exportJson);
