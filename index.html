@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masu TodoList</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --accent-2: #3b82f6;
+      --danger: #ef4444;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background: linear-gradient(160deg,#020617,#111827 60%,#0f172a);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    .card {
+      background: rgba(17,24,39,.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.35);
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    .sub { color: var(--muted); margin-bottom: 18px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    input[type="text"] {
+      flex: 1;
+      min-width: 220px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 16px;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      cursor: pointer;
+      color: white;
+    }
+    .add { background: var(--accent); }
+    .filter { background: #1e293b; }
+    .filter.active { background: var(--accent-2); }
+    .clear { background: var(--danger); }
+    .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0; color: var(--muted); font-size: 14px; }
+    ul { list-style: none; padding: 0; margin: 18px 0 0; }
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 10px;
+      background: #0b1220;
+    }
+    li.done .text { text-decoration: line-through; color: #64748b; }
+    .text { flex: 1; word-break: break-word; }
+    .tiny { color: var(--muted); font-size: 12px; }
+    .ghost { background: #334155; }
+    .empty { text-align: center; color: var(--muted); padding: 20px 0 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🦞 Masu TodoList</h1>
+      <div class="sub">最小可用版：新增、完成、刪除、篩選、localStorage。</div>
+
+      <div class="row">
+        <input id="todoInput" type="text" placeholder="輸入今天要完成的事..." />
+        <button class="add" id="addBtn">新增</button>
+      </div>
+
+      <div class="stats">
+        <div>總數：<span id="totalCount">0</span></div>
+        <div>未完成：<span id="activeCount">0</span></div>
+        <div>已完成：<span id="doneCount">0</span></div>
+      </div>
+
+      <div class="row">
+        <button class="filter active" data-filter="all">全部</button>
+        <button class="filter" data-filter="active">進行中</button>
+        <button class="filter" data-filter="done">已完成</button>
+        <button class="clear" id="clearDoneBtn">清除已完成</button>
+      </div>
+
+      <ul id="todoList"></ul>
+      <div class="empty" id="emptyState">目前沒有任務，新增一個吧。</div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'masu-todolist-v1';
+    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let currentFilter = 'all';
+
+    const todoInput = document.getElementById('todoInput');
+    const addBtn = document.getElementById('addBtn');
+    const todoList = document.getElementById('todoList');
+    const emptyState = document.getElementById('emptyState');
+    const totalCount = document.getElementById('totalCount');
+    const activeCount = document.getElementById('activeCount');
+    const doneCount = document.getElementById('doneCount');
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+
+    function addTodo() {
+      const text = todoInput.value.trim();
+      if (!text) return;
+      todos.unshift({
+        id: crypto.randomUUID(),
+        text,
+        done: false,
+        createdAt: new Date().toLocaleString('zh-TW')
+      });
+      todoInput.value = '';
+      save();
+      render();
+    }
+
+    function toggleTodo(id) {
+      todos = todos.map(todo => todo.id === id ? { ...todo, done: !todo.done } : todo);
+      save();
+      render();
+    }
+
+    function deleteTodo(id) {
+      todos = todos.filter(todo => todo.id !== id);
+      save();
+      render();
+    }
+
+    function clearDone() {
+      todos = todos.filter(todo => !todo.done);
+      save();
+      render();
+    }
+
+    function filteredTodos() {
+      if (currentFilter === 'active') return todos.filter(t => !t.done);
+      if (currentFilter === 'done') return todos.filter(t => t.done);
+      return todos;
+    }
+
+    function render() {
+      const list = filteredTodos();
+      todoList.innerHTML = '';
+
+      totalCount.textContent = todos.length;
+      activeCount.textContent = todos.filter(t => !t.done).length;
+      doneCount.textContent = todos.filter(t => t.done).length;
+
+      emptyState.style.display = list.length ? 'none' : 'block';
+
+      list.forEach(todo => {
+        const li = document.createElement('li');
+        li.className = todo.done ? 'done' : '';
+        li.innerHTML = `
+          <input type="checkbox" ${todo.done ? 'checked' : ''} />
+          <div class="text-wrap" style="flex:1;">
+            <div class="text">${escapeHtml(todo.text)}</div>
+            <div class="tiny">建立時間：${escapeHtml(todo.createdAt)}</div>
+          </div>
+          <button class="ghost">刪除</button>
+        `;
+        li.querySelector('input').addEventListener('change', () => toggleTodo(todo.id));
+        li.querySelector('button').addEventListener('click', () => deleteTodo(todo.id));
+        todoList.appendChild(li);
+      });
+
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    addBtn.addEventListener('click', addTodo);
+    todoInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTodo();
+    });
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentFilter = btn.dataset.filter;
+        render();
+      });
+    });
+    document.getElementById('clearDoneBtn').addEventListener('click', clearDone);
+
+    render();
+  </script>
+</body>
+</html>
