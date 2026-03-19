@@ -11,107 +11,71 @@
 </head>
 <body>
   <div class="shell">
-    <section class="hero">
+    <section class="hero compact-hero">
       <div class="hero-main glass">
-        <div class="eyebrow">🦞 Masu TodoList · 低維護但更順手的每日控制台</div>
-        <h1>把想做的事，收斂成真的能推進的節奏。</h1>
+        <div class="eyebrow">🦞 Masu TodoList · 更能操作的每日工作台</div>
+        <h1>不只好看，還要能真的管理任務。</h1>
         <p class="hero-sub">
-          保留這個專案「好懂、好改、好部署」的本質，但把介面整理得更像一個每日工作台：
-          先看今天焦點，再決定優先順序，最後用更低阻力完成它。
+          這版把重點從「展示」拉回「操作」：你可以直接編輯更多欄位、開啟詳情、改狀態、寫備註、加標籤，
+          讓它更像能推進事情的工作台，而不是只會列清單的頁面。
         </p>
         <div class="hero-metrics">
-          <div class="metric">
-            <div class="metric-label">總任務</div>
-            <div class="metric-value" id="heroTotal">0</div>
-            <div class="metric-note">所有已記錄事項</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">今日焦點</div>
-            <div class="metric-value" id="heroToday">0</div>
-            <div class="metric-note">今天到期或已逾期</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">完成率</div>
-            <div class="metric-value" id="heroProgress">0%</div>
-            <div class="metric-note">已完成 / 全部任務</div>
-          </div>
+          <div class="metric"><div class="metric-label">總任務</div><div class="metric-value" id="heroTotal">0</div></div>
+          <div class="metric"><div class="metric-label">今日焦點</div><div class="metric-value" id="heroToday">0</div></div>
+          <div class="metric"><div class="metric-label">完成率</div><div class="metric-value" id="heroProgress">0%</div></div>
+          <div class="metric"><div class="metric-label">進行中</div><div class="metric-value" id="heroInProgress">0</div></div>
         </div>
       </div>
-
-      <aside class="hero-side glass">
-        <div>
-          <div class="panel-title">今天狀態</div>
-          <div class="progress-card">
-            <div class="progress-top">
-              <div class="progress-label">完成進度</div>
-              <div class="progress-value" id="progressText">0 / 0</div>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="panel-title">快速聚焦</div>
-          <div class="focus-list">
-            <div class="focus-chip">
-              <span class="tiny">高優先未完成</span>
-              <strong id="focusHigh">0</strong>
-            </div>
-            <div class="focus-chip">
-              <span class="tiny">逾期任務</span>
-              <strong id="focusOverdue">0</strong>
-            </div>
-            <div class="focus-chip">
-              <span class="tiny">今天到期</span>
-              <strong id="focusDueToday">0</strong>
-            </div>
-            <div class="focus-chip">
-              <span class="tiny">等待收尾</span>
-              <strong id="focusActive">0</strong>
-            </div>
-          </div>
-        </div>
-      </aside>
     </section>
 
-    <section class="main-grid">
+    <section class="main-grid wide-grid">
       <main class="composer glass">
         <div class="section-header">
           <div>
             <h2>任務面板</h2>
-            <div class="section-note">可搜尋、切換視角、拖曳排序，也支援雙擊任務文字直接編輯。</div>
+            <div class="section-note">新增、搜尋、批次切換視角，點「詳情」後可以編輯完整欄位。</div>
           </div>
           <div class="pill" id="lastUpdated">尚未更新</div>
         </div>
 
-        <div class="quick-row">
-          <input id="searchInput" type="text" placeholder="🔎 搜尋任務、關鍵字或脈絡..." />
+        <div class="quick-row two-search-row">
+          <input id="searchInput" type="text" placeholder="🔎 搜尋標題、備註、標籤..." />
           <button class="btn-secondary" id="focusToggleBtn" type="button">只看焦點</button>
         </div>
 
-        <div class="field-grid">
+        <div class="field-grid add-grid">
           <input id="todoInput" type="text" placeholder="輸入今天要推進的事..." />
+          <select id="statusInput" aria-label="狀態">
+            <option value="todo" selected>未開始</option>
+            <option value="doing">進行中</option>
+            <option value="waiting">等待中</option>
+            <option value="done">已完成</option>
+          </select>
           <select id="priorityInput" aria-label="優先級">
             <option value="low">低優先</option>
             <option value="medium" selected>中優先</option>
             <option value="high">高優先</option>
           </select>
           <input id="dueDateInput" type="date" aria-label="截止日期" />
+          <input id="tagInput" type="text" placeholder="標籤，用逗號分隔" />
           <button class="btn-primary" id="addBtn" type="button">新增</button>
         </div>
 
-        <div class="toolbar">
+        <div class="toolbar wrap-toolbar">
           <button class="filter-btn active" data-filter="all" type="button">全部</button>
           <button class="filter-btn" data-filter="active" type="button">進行中</button>
-          <button class="filter-btn" data-filter="done" type="button">已完成</button>
           <button class="filter-btn" data-filter="today" type="button">今天</button>
           <button class="filter-btn" data-filter="overdue" type="button">逾期</button>
           <button class="filter-btn" data-filter="high" type="button">高優先</button>
+          <button class="filter-btn" data-filter="waiting" type="button">等待中</button>
+          <button class="filter-btn" data-filter="done" type="button">已完成</button>
         </div>
 
-        <div class="actions-row">
+        <div class="actions-row wrap-actions">
           <button class="btn-secondary" id="exportBtn" type="button">匯出 JSON</button>
           <button class="btn-secondary" id="importBtn" type="button">匯入 JSON</button>
+          <button class="btn-secondary" id="markSelectedDoneBtn" type="button">勾選項目完成</button>
+          <button class="btn-danger" id="deleteSelectedBtn" type="button">刪除勾選項目</button>
           <button class="btn-danger" id="clearDoneBtn" type="button">清除已完成</button>
           <input id="importFile" type="file" accept="application/json" hidden />
         </div>
@@ -120,13 +84,13 @@
           <div class="pill">總數：<strong id="totalCount">0</strong></div>
           <div class="pill">未完成：<strong id="activeCount">0</strong></div>
           <div class="pill">已完成：<strong id="doneCount">0</strong></div>
-          <div class="pill">目前排序：拖曳即可調整</div>
+          <div class="pill">已勾選：<strong id="selectedCount">0</strong></div>
         </div>
 
         <ul class="task-list" id="todoList"></ul>
         <div class="empty-state" id="emptyState">
           <div style="font-size:20px; margin-bottom:8px;">目前沒有任務</div>
-          <div>先新增一件最值得推進的事，讓這個面板開始為你工作。</div>
+          <div>先新增一件真正要推進的事，再逐步補上狀態、標籤與備註。</div>
         </div>
       </main>
 
@@ -134,49 +98,112 @@
         <div class="section-header">
           <div>
             <h3>側邊摘要</h3>
-            <div class="section-note">不只是記錄清單，也幫你先做一輪收斂。</div>
+            <div class="section-note">把「現在最該動哪幾件」先收斂出來。</div>
           </div>
         </div>
 
         <div class="sidebar-stack">
           <section class="side-card">
-            <h3>今天先做這些</h3>
+            <h3>今日建議先做</h3>
             <ul class="side-list" id="topTasksList">
               <li><span class="hint">目前沒有可推薦任務</span><span>—</span></li>
             </ul>
           </section>
 
           <section class="side-card">
-            <h3>任務節奏</h3>
-            <ul class="side-list">
-              <li><span>搜尋 + 篩選分離</span><small>減少混亂</small></li>
-              <li><span>Today / Overdue / High 視角</span><small>更快收斂</small></li>
-              <li><span>雙擊直接編輯</span><small>降低修正阻力</small></li>
-              <li><span>拖曳排序保留</span><small>維持原本好用處</small></li>
+            <h3>進度</h3>
+            <div class="progress-card">
+              <div class="progress-top">
+                <div class="progress-label">完成進度</div>
+                <div class="progress-value" id="progressText">0 / 0</div>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+            <div class="focus-list">
+              <div class="focus-chip"><span class="tiny">高優先未完成</span><strong id="focusHigh">0</strong></div>
+              <div class="focus-chip"><span class="tiny">逾期任務</span><strong id="focusOverdue">0</strong></div>
+              <div class="focus-chip"><span class="tiny">今天到期</span><strong id="focusDueToday">0</strong></div>
+              <div class="focus-chip"><span class="tiny">等待中</span><strong id="focusWaiting">0</strong></div>
+            </div>
+          </section>
+
+          <section class="side-card">
+            <h3>目前這版新增的實用性</h3>
+            <ul class="side-list compact-list">
+              <li><span>任務詳情面板</span><small>不只改文字</small></li>
+              <li><span>備註 / 標籤 / 預估時間</span><small>資訊更完整</small></li>
+              <li><span>狀態切換</span><small>未開始 / 進行中 / 等待中 / 完成</small></li>
+              <li><span>批次操作</span><small>勾選後一起處理</small></li>
             </ul>
-          </section>
-
-          <section class="side-card">
-            <h3>狀態圖例</h3>
-            <div class="legend">
-              <span class="badge priority-high">高優先</span>
-              <span class="badge today">今天到期</span>
-              <span class="badge overdue">已逾期</span>
-              <span class="badge">雙擊可編輯</span>
-            </div>
-          </section>
-
-          <section class="side-card">
-            <h3>使用提示</h3>
-            <div class="hint" style="line-height:1.8;">
-              Enter 可直接新增；雙擊任務文字可編輯；在「全部」視角拖曳排序最直覺。
-              若只想快速專注，可以切到「只看焦點」搭配 Today / Overdue / 高優先。
-            </div>
           </section>
         </div>
       </aside>
     </section>
   </div>
+
+  <div class="drawer-backdrop hidden" id="drawerBackdrop"></div>
+  <aside class="task-drawer hidden" id="taskDrawer">
+    <div class="drawer-header">
+      <div>
+        <div class="eyebrow">任務詳情</div>
+        <h3 id="drawerTitle">編輯任務</h3>
+      </div>
+      <button class="icon-btn" id="closeDrawerBtn" type="button">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <label class="drawer-field">
+        <span>標題</span>
+        <input id="detailText" type="text" />
+      </label>
+
+      <label class="drawer-field">
+        <span>備註</span>
+        <textarea id="detailNotes" rows="5" placeholder="補充脈絡、卡點、下一步..."></textarea>
+      </label>
+
+      <div class="drawer-grid">
+        <label class="drawer-field">
+          <span>狀態</span>
+          <select id="detailStatus">
+            <option value="todo">未開始</option>
+            <option value="doing">進行中</option>
+            <option value="waiting">等待中</option>
+            <option value="done">已完成</option>
+            <option value="cancelled">已取消</option>
+          </select>
+        </label>
+        <label class="drawer-field">
+          <span>優先級</span>
+          <select id="detailPriority">
+            <option value="low">低優先</option>
+            <option value="medium">中優先</option>
+            <option value="high">高優先</option>
+          </select>
+        </label>
+        <label class="drawer-field">
+          <span>截止日期</span>
+          <input id="detailDueDate" type="date" />
+        </label>
+        <label class="drawer-field">
+          <span>預估時間（分鐘）</span>
+          <input id="detailEstimate" type="number" min="0" step="5" />
+        </label>
+      </div>
+
+      <label class="drawer-field">
+        <span>標籤</span>
+        <input id="detailTags" type="text" placeholder="例如：工作, 緊急, 網站" />
+      </label>
+
+      <div class="drawer-meta" id="detailMeta"></div>
+    </div>
+
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="saveDrawerBtn" type="button">儲存</button>
+      <button class="btn-danger" id="deleteDrawerBtn" type="button">刪除任務</button>
+    </div>
+  </aside>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
   <script src="./app.js"></script>
