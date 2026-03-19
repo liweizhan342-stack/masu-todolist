@@ -253,9 +253,21 @@ function matchesSearch(todo) {
   return (todo.text || '').toLowerCase().includes(filterText.trim().toLowerCase());
 }
 
+function scoreTodo(todo) {
+  return (isOverdue(todo) ? 100 : 0) + (isToday(todo) ? 40 : 0) + priorityRank(todo.priority) * 10;
+}
+
+function getFocusTargetId() {
+  const candidates = todos
+    .filter(todo => !todo.done && matchesSearch(todo))
+    .sort((a, b) => scoreTodo(b) - scoreTodo(a));
+  return candidates[0]?.id || null;
+}
+
 function matchesFocus(todo) {
   if (!focusOnly) return true;
-  return !todo.done && (todo.priority === 'high' || isToday(todo) || isOverdue(todo));
+  const focusId = getFocusTargetId();
+  return !!focusId && todo.id === focusId;
 }
 
 function filteredTodos() {
@@ -314,11 +326,7 @@ function updateSummary() {
 
   const recommended = [...todos]
     .filter(todo => !todo.done)
-    .sort((a, b) => {
-      const scoreA = (isOverdue(a) ? 100 : 0) + (isToday(a) ? 40 : 0) + priorityRank(a.priority) * 10;
-      const scoreB = (isOverdue(b) ? 100 : 0) + (isToday(b) ? 40 : 0) + priorityRank(b.priority) * 10;
-      return scoreB - scoreA;
-    })
+    .sort((a, b) => scoreTodo(b) - scoreTodo(a))
     .slice(0, 3);
 
   topTasksList.innerHTML = '';
@@ -443,7 +451,7 @@ function render() {
     btn.classList.toggle('active', btn.dataset.filter === currentFilter);
   });
   focusToggleBtn.classList.toggle('active', focusOnly);
-  focusToggleBtn.textContent = focusOnly ? '顯示全部視角' : '只看焦點';
+  focusToggleBtn.textContent = focusOnly ? '退出唯一焦點' : '唯一焦點';
   if (compactModeToggle) {
     compactModeToggle.classList.toggle('active', compactMode);
     compactModeToggle.textContent = compactMode ? '退出簡潔模式' : '簡潔模式';
