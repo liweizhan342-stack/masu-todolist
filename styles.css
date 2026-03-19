@@ -328,6 +328,12 @@
       margin-top: 14px;
     }
 
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .status-line {
       display: flex;
       flex-wrap: wrap;
@@ -435,6 +441,103 @@
       gap: 8px;
       flex-wrap: wrap;
       align-items: center;
+    }
+
+    .edit-panel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .edit-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .task-edit-select,
+    .task-edit-date {
+      width: 100%;
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .mini-btn {
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(109, 94, 252, 0.2);
+      border: 1px solid rgba(109, 94, 252, 0.36);
+      color: #ede9fe;
+      font-weight: 600;
+    }
+
+    .mini-btn.ghost {
+      background: rgba(30, 41, 59, 0.72);
+      border-color: rgba(148, 163, 184, 0.12);
+      color: #dbe4f0;
+    }
+
+    .history-row {
+      margin-top: 12px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.14);
+      padding-top: 12px;
+    }
+
+    .history-toggle-btn {
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(30, 41, 59, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      color: #dbe4f0;
+      font-weight: 600;
+    }
+
+    .history-panel {
+      display: none;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    .history-row.open .history-panel {
+      display: grid;
+    }
+
+    .history-entry {
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      background: rgba(15, 23, 42, 0.52);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 13px;
+      color: #dbe4f0;
+    }
+
+    .history-entry ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .history-entry li {
+      line-height: 1.7;
+    }
+
+    .history-head {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .history-empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 4px 2px;
+    }
+
+    body.compact-mode .history-row,
+    body.compact-mode .meta-badge {
+      display: none;
     }
 
     .badge {
