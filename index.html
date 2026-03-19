@@ -3,364 +3,182 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Masu TodoList：低維護、可部署、可持續升級的個人任務儀表板。" />
   <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="./styles.css" />
   <title>Masu TodoList</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --accent: #22c55e;
-      --accent-2: #3b82f6;
-      --danger: #ef4444;
-      --border: #1f2937;
-      --low: #64748b;
-      --medium: #f59e0b;
-      --high: #ef4444;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background: linear-gradient(160deg,#020617,#111827 60%,#0f172a);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px;
-    }
-    .wrap { max-width: 880px; margin: 0 auto; }
-    .card {
-      background: rgba(17,24,39,.92);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.35);
-    }
-    h1 { margin: 0 0 8px; font-size: 30px; }
-    .sub { color: var(--muted); margin-bottom: 18px; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    input[type="text"], input[type="date"], select {
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #0b1220;
-      color: var(--text);
-      font-size: 16px;
-    }
-    input[type="text"] { flex: 1; min-width: 220px; }
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 15px;
-      cursor: pointer;
-      color: white;
-    }
-    .add { background: var(--accent); }
-    .filter { background: #1e293b; }
-    .filter.active { background: var(--accent-2); }
-    .clear { background: var(--danger); }
-    .ghost { background: #334155; }
-    .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0; color: var(--muted); font-size: 14px; }
-    .tiny { color: var(--muted); font-size: 12px; }
-    .empty { text-align: center; color: var(--muted); padding: 20px 0 6px; }
-    .actions { margin-top: 12px; }
-    ul { list-style: none; padding: 0; margin: 18px 0 0; }
-    li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 10px;
-      background: #0b1220;
-    }
-    li.done .text { text-decoration: line-through; color: #64748b; }
-    .task-main { flex: 1; }
-    .text { font-size: 16px; margin-bottom: 6px; word-break: break-word; }
-    .meta { display: flex; gap: 8px; flex-wrap: wrap; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      border: 1px solid #334155;
-      background: #111827;
-    }
-    .drag-handle {
-      color: var(--muted);
-      cursor: grab;
-      user-select: none;
-      font-size: 20px;
-      line-height: 1;
-      padding-top: 4px;
-    }
-    .sortable-ghost {
-      opacity: .35;
-    }
-    .sortable-chosen {
-      border-color: var(--accent-2);
-    }
-    .priority-low { color: #cbd5e1; border-color: var(--low); }
-    .priority-medium { color: #fde68a; border-color: var(--medium); }
-    .priority-high { color: #fecaca; border-color: var(--high); }
-    @media (max-width: 640px) {
-      body { padding: 14px; }
-      .row > * { width: 100%; }
-      button { width: 100%; }
-    }
-  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>🦞 Masu TodoList</h1>
-      <div class="sub">低維護版：新增、完成、刪除、篩選、搜尋、優先級、截止日、JSON 匯出匯入。</div>
-
-      <div class="row" style="margin-bottom:10px;">
-        <input id="searchInput" type="text" placeholder="🔍 搜尋任務關鍵字..." />
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-main glass">
+        <div class="eyebrow">🦞 Masu TodoList · 低維護但更順手的每日控制台</div>
+        <h1>把想做的事，收斂成真的能推進的節奏。</h1>
+        <p class="hero-sub">
+          保留這個專案「好懂、好改、好部署」的本質，但把介面整理得更像一個每日工作台：
+          先看今天焦點，再決定優先順序，最後用更低阻力完成它。
+        </p>
+        <div class="hero-metrics">
+          <div class="metric">
+            <div class="metric-label">總任務</div>
+            <div class="metric-value" id="heroTotal">0</div>
+            <div class="metric-note">所有已記錄事項</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">今日焦點</div>
+            <div class="metric-value" id="heroToday">0</div>
+            <div class="metric-note">今天到期或已逾期</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">完成率</div>
+            <div class="metric-value" id="heroProgress">0%</div>
+            <div class="metric-note">已完成 / 全部任務</div>
+          </div>
+        </div>
       </div>
 
-      <div class="row">
-        <input id="todoInput" type="text" placeholder="輸入今天要完成的事..." />
-        <select id="priorityInput" aria-label="優先級">
-          <option value="low">低優先</option>
-          <option value="medium" selected>中優先</option>
-          <option value="high">高優先</option>
-        </select>
-        <input id="dueDateInput" type="date" aria-label="截止日期" />
-        <button class="add" id="addBtn">新增</button>
-      </div>
+      <aside class="hero-side glass">
+        <div>
+          <div class="panel-title">今天狀態</div>
+          <div class="progress-card">
+            <div class="progress-top">
+              <div class="progress-label">完成進度</div>
+              <div class="progress-value" id="progressText">0 / 0</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+        </div>
 
-      <div class="stats">
-        <div>總數：<span id="totalCount">0</span></div>
-        <div>未完成：<span id="activeCount">0</span></div>
-        <div>已完成：<span id="doneCount">0</span></div>
-      </div>
-
-      <div class="row">
-        <button class="filter active" data-filter="all">全部</button>
-        <button class="filter" data-filter="active">進行中</button>
-        <button class="filter" data-filter="done">已完成</button>
-        <button class="clear" id="clearDoneBtn">清除已完成</button>
-      </div>
-
-      <div class="row actions">
-        <button class="ghost" id="exportBtn">匯出 JSON</button>
-        <button class="ghost" id="importBtn">匯入 JSON</button>
-        <input id="importFile" type="file" accept="application/json" style="display:none;" />
-      </div>
-
-      <ul id="todoList"></ul>
-      <div class="empty" id="emptyState">目前沒有任務，新增一個吧。</div>
-    </div>
-  </div>
-
-  <script>
-    const STORAGE_KEY = 'masu-todolist-v2';
-    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    let currentFilter = 'all';
-    let filterText = '';
-    let sortableInstance = null;
-
-    const todoInput = document.getElementById('todoInput');
-    const searchInput = document.getElementById('searchInput');
-    const priorityInput = document.getElementById('priorityInput');
-    const dueDateInput = document.getElementById('dueDateInput');
-    const addBtn = document.getElementById('addBtn');
-    const todoList = document.getElementById('todoList');
-    const emptyState = document.getElementById('emptyState');
-    const totalCount = document.getElementById('totalCount');
-    const activeCount = document.getElementById('activeCount');
-    const doneCount = document.getElementById('doneCount');
-
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    }
-
-    function priorityLabel(priority) {
-      return { low: '低優先', medium: '中優先', high: '高優先' }[priority] || '中優先';
-    }
-
-    function addTodo() {
-      const text = todoInput.value.trim();
-      if (!text) return;
-      todos.unshift({
-        id: crypto.randomUUID(),
-        text,
-        priority: priorityInput.value,
-        dueDate: dueDateInput.value || '',
-        done: false,
-        createdAt: new Date().toLocaleString('zh-TW')
-      });
-      todoInput.value = '';
-      dueDateInput.value = '';
-      priorityInput.value = 'medium';
-      save();
-      render();
-    }
-
-    function toggleTodo(id) {
-      todos = todos.map(todo => todo.id === id ? { ...todo, done: !todo.done } : todo);
-      save();
-      render();
-    }
-
-    function deleteTodo(id) {
-      todos = todos.filter(todo => todo.id !== id);
-      save();
-      render();
-    }
-
-    function clearDone() {
-      todos = todos.filter(todo => !todo.done);
-      save();
-      render();
-    }
-
-    function filteredTodos() {
-      let list = todos;
-      if (currentFilter === 'active') list = list.filter(t => !t.done);
-      if (currentFilter === 'done') list = list.filter(t => t.done);
-      if (filterText.trim()) {
-        const keyword = filterText.trim().toLowerCase();
-        list = list.filter(t => (t.text || '').toLowerCase().includes(keyword));
-      }
-      return list;
-    }
-
-    function exportJson() {
-      const blob = new Blob([JSON.stringify(todos, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'masu-todolist-backup.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importJson(file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          if (!Array.isArray(data)) throw new Error('JSON 格式錯誤');
-          todos = data;
-          save();
-          render();
-          alert('匯入成功');
-        } catch (error) {
-          alert('匯入失敗：請確認 JSON 格式正確');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function render() {
-      const list = filteredTodos();
-      todoList.innerHTML = '';
-
-      totalCount.textContent = todos.length;
-      activeCount.textContent = todos.filter(t => !t.done).length;
-      doneCount.textContent = todos.filter(t => t.done).length;
-      emptyState.style.display = list.length ? 'none' : 'block';
-
-      list.forEach(todo => {
-        const li = document.createElement('li');
-        li.className = todo.done ? 'done' : '';
-        li.dataset.id = todo.id;
-        li.innerHTML = `
-          <div class="drag-handle" title="拖曳排序">⋮⋮</div>
-          <input type="checkbox" ${todo.done ? 'checked' : ''} />
-          <div class="task-main">
-            <div class="text">${escapeHtml(todo.text)}</div>
-            <div class="meta">
-              <span class="badge priority-${escapeHtml(todo.priority)}">${escapeHtml(priorityLabel(todo.priority))}</span>
-              ${todo.dueDate ? `<span class="badge">截止：${escapeHtml(todo.dueDate)}</span>` : ''}
-              <span class="badge">建立：${escapeHtml(todo.createdAt)}</span>
+        <div>
+          <div class="panel-title">快速聚焦</div>
+          <div class="focus-list">
+            <div class="focus-chip">
+              <span class="tiny">高優先未完成</span>
+              <strong id="focusHigh">0</strong>
+            </div>
+            <div class="focus-chip">
+              <span class="tiny">逾期任務</span>
+              <strong id="focusOverdue">0</strong>
+            </div>
+            <div class="focus-chip">
+              <span class="tiny">今天到期</span>
+              <strong id="focusDueToday">0</strong>
+            </div>
+            <div class="focus-chip">
+              <span class="tiny">等待收尾</span>
+              <strong id="focusActive">0</strong>
             </div>
           </div>
-          <button class="ghost">刪除</button>
-        `;
-        li.querySelector('input').addEventListener('change', () => toggleTodo(todo.id));
-        li.querySelector('button').addEventListener('click', () => deleteTodo(todo.id));
-        todoList.appendChild(li);
-      });
+        </div>
+      </aside>
+    </section>
 
-      if (sortableInstance) {
-        sortableInstance.destroy();
-        sortableInstance = null;
-      }
+    <section class="main-grid">
+      <main class="composer glass">
+        <div class="section-header">
+          <div>
+            <h2>任務面板</h2>
+            <div class="section-note">可搜尋、切換視角、拖曳排序，也支援雙擊任務文字直接編輯。</div>
+          </div>
+          <div class="pill" id="lastUpdated">尚未更新</div>
+        </div>
 
-      if (window.Sortable) {
-        sortableInstance = new Sortable(todoList, {
-          animation: 150,
-          handle: '.drag-handle',
-          ghostClass: 'sortable-ghost',
-          chosenClass: 'sortable-chosen',
-          onEnd: () => {
-            const orderedIds = [...todoList.querySelectorAll('li')].map(li => li.dataset.id);
-            if (currentFilter === 'all' && !filterText.trim()) {
-              todos = orderedIds.map(id => todos.find(todo => todo.id === id)).filter(Boolean);
-            } else {
-              const orderedSubset = orderedIds.map(id => todos.find(todo => todo.id === id)).filter(Boolean);
-              const remaining = todos.filter(todo => !orderedIds.includes(todo.id));
-              todos = [...orderedSubset, ...remaining];
-            }
-            save();
-            render();
-          }
-        });
-      }
+        <div class="quick-row">
+          <input id="searchInput" type="text" placeholder="🔎 搜尋任務、關鍵字或脈絡..." />
+          <button class="btn-secondary" id="focusToggleBtn" type="button">只看焦點</button>
+        </div>
 
-      document.querySelectorAll('[data-filter]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
-      });
-    }
+        <div class="field-grid">
+          <input id="todoInput" type="text" placeholder="輸入今天要推進的事..." />
+          <select id="priorityInput" aria-label="優先級">
+            <option value="low">低優先</option>
+            <option value="medium" selected>中優先</option>
+            <option value="high">高優先</option>
+          </select>
+          <input id="dueDateInput" type="date" aria-label="截止日期" />
+          <button class="btn-primary" id="addBtn" type="button">新增</button>
+        </div>
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text ?? '';
-      return div.innerHTML;
-    }
+        <div class="toolbar">
+          <button class="filter-btn active" data-filter="all" type="button">全部</button>
+          <button class="filter-btn" data-filter="active" type="button">進行中</button>
+          <button class="filter-btn" data-filter="done" type="button">已完成</button>
+          <button class="filter-btn" data-filter="today" type="button">今天</button>
+          <button class="filter-btn" data-filter="overdue" type="button">逾期</button>
+          <button class="filter-btn" data-filter="high" type="button">高優先</button>
+        </div>
 
-    addBtn.addEventListener('click', addTodo);
-    todoInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') addTodo();
-    });
-    document.querySelectorAll('[data-filter]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentFilter = btn.dataset.filter;
-        render();
-      });
-    });
-    searchInput.addEventListener('input', (e) => {
-      filterText = e.target.value;
-      render();
-    });
-    document.getElementById('clearDoneBtn').addEventListener('click', clearDone);
-    document.getElementById('exportBtn').addEventListener('click', exportJson);
-    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
-    document.getElementById('importFile').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) importJson(file);
-      e.target.value = '';
-    });
+        <div class="actions-row">
+          <button class="btn-secondary" id="exportBtn" type="button">匯出 JSON</button>
+          <button class="btn-secondary" id="importBtn" type="button">匯入 JSON</button>
+          <button class="btn-danger" id="clearDoneBtn" type="button">清除已完成</button>
+          <input id="importFile" type="file" accept="application/json" hidden />
+        </div>
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((error) => {
-          console.error('Service Worker 註冊失敗：', error);
-        });
-      });
-    }
+        <div class="status-line">
+          <div class="pill">總數：<strong id="totalCount">0</strong></div>
+          <div class="pill">未完成：<strong id="activeCount">0</strong></div>
+          <div class="pill">已完成：<strong id="doneCount">0</strong></div>
+          <div class="pill">目前排序：拖曳即可調整</div>
+        </div>
 
-    render();
-  </script>
+        <ul class="task-list" id="todoList"></ul>
+        <div class="empty-state" id="emptyState">
+          <div style="font-size:20px; margin-bottom:8px;">目前沒有任務</div>
+          <div>先新增一件最值得推進的事，讓這個面板開始為你工作。</div>
+        </div>
+      </main>
+
+      <aside class="sidebar glass">
+        <div class="section-header">
+          <div>
+            <h3>側邊摘要</h3>
+            <div class="section-note">不只是記錄清單，也幫你先做一輪收斂。</div>
+          </div>
+        </div>
+
+        <div class="sidebar-stack">
+          <section class="side-card">
+            <h3>今天先做這些</h3>
+            <ul class="side-list" id="topTasksList">
+              <li><span class="hint">目前沒有可推薦任務</span><span>—</span></li>
+            </ul>
+          </section>
+
+          <section class="side-card">
+            <h3>任務節奏</h3>
+            <ul class="side-list">
+              <li><span>搜尋 + 篩選分離</span><small>減少混亂</small></li>
+              <li><span>Today / Overdue / High 視角</span><small>更快收斂</small></li>
+              <li><span>雙擊直接編輯</span><small>降低修正阻力</small></li>
+              <li><span>拖曳排序保留</span><small>維持原本好用處</small></li>
+            </ul>
+          </section>
+
+          <section class="side-card">
+            <h3>狀態圖例</h3>
+            <div class="legend">
+              <span class="badge priority-high">高優先</span>
+              <span class="badge today">今天到期</span>
+              <span class="badge overdue">已逾期</span>
+              <span class="badge">雙擊可編輯</span>
+            </div>
+          </section>
+
+          <section class="side-card">
+            <h3>使用提示</h3>
+            <div class="hint" style="line-height:1.8;">
+              Enter 可直接新增；雙擊任務文字可編輯；在「全部」視角拖曳排序最直覺。
+              若只想快速專注，可以切到「只看焦點」搭配 Today / Overdue / 高優先。
+            </div>
+          </section>
+        </div>
+      </aside>
+    </section>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
